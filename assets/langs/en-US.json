@@ -1,0 +1,13 @@
+{
+  "title": "OMDB",
+
+  "language": "Choose Language",
+  "home": "Home",
+  "favorite": "Favorite",
+  "about": "About Us",
+  "signout": "Signout",
+
+  "search": "Search",
+  "notFoundData": "Data not found"
+
+}

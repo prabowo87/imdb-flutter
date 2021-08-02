@@ -1,117 +1,122 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:imdb/page/splash_page.dart';
+import 'package:imdb/providers/favorite_provider.dart';
+import 'package:imdb/providers/login_provider.dart';
+import 'package:imdb/providers/movie_provider.dart';
+import 'package:imdb/utils/shared_preferences_utils.dart';
+import 'package:imdb/widgets/zoom_page.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'constants.dart' as contstants;
+import 'localdb/db_helper.dart';
+import 'providers/menu_provider.dart';
+import 'utils/route_utils.dart';
+import 'widgets/menu_page_widget.dart';
 
-void main() {
-  runApp(MyApp());
-}
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  var isLoggedIn = getLogin().then((userStatus) {
+    if (userStatus == null || userStatus == false) {
+      return false;
+    } else {
+      return true;
+    }
+  });
 
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-        // This makes the visual density adapt to the platform that you run
-        // the app on. For desktop platforms, the controls will be smaller and
-        // closer together (more dense) than on mobile platforms.
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
+  runApp(
+      EasyLocalization(
+          supportedLocales: [
+            Locale('id', 'ID'),
+            Locale('en', 'US'),
           ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+          path: 'assets/langs',
+          child: await isLoggedIn != null && await isLoggedIn==true?App(status: true,):App(status: false,)
+      )
+
+  );
+}
+class App extends StatelessWidget {
+  App({Key? key, this.status}) : super(key: key);
+  final bool? status;
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
+      providers: [
+        //BERFUNGSI UNTUK ME-LOAD PROVIDER Products
+        //JIKA MENGGUNAKAN LEBIH DARI 1 PROVIDER CUKUP PISAHKAN DENGAN COMMAND DI DALAM ARRAY providers.
+        ChangeNotifierProvider( create: (_) => LoginProvider(),),
+        ChangeNotifierProvider( create: (_) => MovieProvider(),),
+        ChangeNotifierProvider( create: (_) => FavoriteProvider(),),
+        // ChangeNotifierProvider( create: (_) => MenuProvider(),),
+
+      ],
+      child: MaterialApp(
+          localizationsDelegates: context.localizationDelegates,
+          supportedLocales: context.supportedLocales,
+          debugShowCheckedModeBanner: false,
+          locale: context.locale,
+          routes: appRoutes,
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            // visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          home: SplashPage(status: status,)
+      )
     );
+
   }
 }
+class MyApp extends StatefulWidget {
+  final bool? status;
+  MyApp({Key? key,  this.status}) : super(key: key);
+  @override
+  _MyApp createState() => _MyApp();
+  static const routeName = "/MyApp";
+
+}
+class _MyApp extends State<MyApp> with SingleTickerProviderStateMixin{
+  late MenuProvider menuProvider;
+
+  @override
+  void initState() {
+
+    super.initState();
+
+    var dbHelper =new DbHelper();
+    dbHelper.database;
+    menuProvider = new MenuProvider(
+      vsync: this,
+    )..addListener(() => setState(() {}));
+
+  }
+  @override
+  void dispose() {
+    menuProvider.dispose();
+    super.dispose();
+  }
+  @override
+  Widget build(BuildContext context) {
+
+    return ChangeNotifierProvider.value(
+      value:menuProvider,
+      child  :ZoomPage(
+        menuScreen: MenuPageWidget(),
+        contentScreen: Layout(
+            contentBuilder: (cc) => Container(
+              color: Colors.grey[200],
+              child: Container(
+                color: Colors.grey[200],
+              ),
+            )),
+      ),
+
+    );
+  }
+
+}
+
+
+

@@ -1,0 +1,13 @@
+{
+  "title": "OMDB",
+
+  "language": "Pilih Bahasa",
+  "home": "Beranda",
+  "favorite": "Favorit",
+  "about": "Tentang Kami",
+  "signout": "Keluar",
+
+  "search": "cari",
+  "notFoundData": "Data tidak ditemukan"
+
+}
